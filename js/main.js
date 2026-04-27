@@ -52,12 +52,17 @@
         function updateCamera() {
             var angle = player.mesh.rotation.y;
             desiredPos.set(
-                player.mesh.position.x + Math.sin(angle) * cameraOffset.z,
-                player.mesh.position.y + cameraOffset.y,
-                player.mesh.position.z + Math.cos(angle) * cameraOffset.z
+                player.mesh.position.x - Math.sin(angle) * 10,
+                player.mesh.position.y + 5,
+                player.mesh.position.z - Math.cos(angle) * 10 + 3
             );
-            camera.position.lerp(desiredPos, 0.08);
-            camera.lookAt(player.mesh.position);
+            camera.position.lerp(desiredPos, 0.1);
+            var lookTarget = new THREE.Vector3(
+                player.mesh.position.x,
+                player.mesh.position.y + 1,
+                player.mesh.position.z
+            );
+            camera.lookAt(lookTarget);
         }
 
         // --- End game ---
