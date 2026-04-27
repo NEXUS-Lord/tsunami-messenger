@@ -24,7 +24,7 @@ window.createWater = function(scene) {
   // BUG 3 FIX: Start at Y = -0.5 (just below ground) so the water surface
   // is immediately visible as it begins rising. WATER_START_Y = -5 was too deep
   // to see. We override the start to -0.5 here so it's visible from frame 1.
-  mesh.position.y = -0.5;
+  mesh.position.y = CONFIG.WATER_START_Y;
 
   // Position the mesh so its "coast" edge aligns with z = -100 (the ocean side).
   // PlaneGeometry(400,400) centered at origin spans z from -200 to +200.
