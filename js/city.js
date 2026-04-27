@@ -111,6 +111,13 @@
             bMesh.position.set(bx, bHeight / 2, bz);
             scene.add(bMesh);
             buildings.push(bMesh);
+            window.CITY_BUILDINGS = window.CITY_BUILDINGS || [];
+            window.CITY_BUILDINGS.push({
+                minX: bx - bWidth / 2,
+                maxX: bx + bWidth / 2,
+                minZ: bz - bDepth / 2,
+                maxZ: bz + bDepth / 2
+            });
         }
 
         // --- Trees ---
