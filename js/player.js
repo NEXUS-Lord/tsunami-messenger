@@ -158,7 +158,6 @@ window.createPlayer = function(scene) {
 
     var drowned = false;
     var frontWheelSteer = 0;
-    var wheelbase = 2.0; // Distance between front and rear axles
 
     function update(delta, keys, waterLevel) {
         if (keys['KeyW'] || keys['ArrowUp']) {
@@ -172,20 +171,22 @@ window.createPlayer = function(scene) {
             if (Math.abs(speed) < 0.001) speed = 0;
         }
 
-        // Front wheel steering angle (Ackermann steering)
+        // Front wheel steering angle (visual + steering input)
         var targetSteer = 0;
         if (Math.abs(speed) > 0.01) {
-            if (keys['KeyA'] || keys['ArrowLeft']) targetSteer = 0.35;
-                        if (keys['KeyA'] || keys['ArrowLeft']) targetSteer = 0.4;
-            if (keys['KeyD'] || keys['ArrowRight']) targetSteer = -0.35;
-                    if (keys['KeyD'] || keys['ArrowRight']) targetSteer = -0.4;
+            if (keys['KeyA'] || keys['ArrowLeft']) targetSteer = 0.25;
+            if (keys['KeyD'] || keys['ArrowRight']) targetSteer = -0.25;
         }
         frontWheelSteer += (targetSteer - frontWheelSteer) * 0.15;
 
-        // Ackermann steering: heading changes based on turn radius, not instantly
-        if (Math.abs(speed) > 0.01 && Math.abs(frontWheelSteer) > 0.01) {
-            var turnRadius = wheelbase / Math.sin(frontWheelSteer);
-            heading += speed / turnRadius;
+        // Smoothly turn based on speed and steering angle, with a hard cap so it cannot spin out.
+        if (Math.abs(speed) > 0.01 && Math.abs(frontWheelSteer) > 0.001) {
+            var turnStrength = Math.abs(speed) * Math.abs(frontWheelSteer) * 0.12;
+            if (speed >= 0) {
+                heading += frontWheelSteer > 0 ? turnStrength : -turnStrength;
+            } else {
+                heading += frontWheelSteer > 0 ? -turnStrength : turnStrength;
+            }
         }
 
         var sinY = Math.sin(heading);
