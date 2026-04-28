@@ -56,15 +56,15 @@ window.createPlayer = function(scene) {
     fork.position.set(0, 0.1, -0.85);
     group.add(fork);
 
-    // Wheels — bake orientation into geometry to avoid Euler issues
-    var fWheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.15, 16);
-    fWheelGeo.rotateZ(Math.PI / 2); // Bake: axle along X
+    // Wheels — rotateX to make circular face visible from behind camera
+    var fWheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.2, 16);
+    fWheelGeo.rotateX(Math.PI / 2);
     var frontWheel = new THREE.Mesh(fWheelGeo, new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.playerDetail }));
     frontWheel.position.set(0, -0.35, -1.0);
     group.add(frontWheel);
 
-    var bWheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.15, 16);
-    bWheelGeo.rotateZ(Math.PI / 2);
+    var bWheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.2, 16);
+    bWheelGeo.rotateX(Math.PI / 2);
     var backWheel = new THREE.Mesh(bWheelGeo, new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.playerDetail }));
     backWheel.position.set(0, -0.35, 0.85);
     group.add(backWheel);

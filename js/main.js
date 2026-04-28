@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ── CAMERA ──
     var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 600);
+    // Start camera behind bike spawn position (20, 0.52, 20)
+    camera.position.set(20, 4, 29);
 
     // ── INIT MODULES ──
     var city = window.createCity(scene);
