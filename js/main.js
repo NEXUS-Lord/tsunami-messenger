@@ -44,13 +44,25 @@ document.addEventListener('DOMContentLoaded', function() {
     var lookAtPoint = new THREE.Vector3();
     var cameraBackOffset = new THREE.Vector3(0, 3.5, 9);
     var cameraLookOffset = new THREE.Vector3(0, 0.9, -4);
+    var cameraYaw = 0;
+    var cameraYawSmoothing = 0.08;
     var firstFrame = true;
 
+    function wrapAngle(angle) {
+        while (angle > Math.PI) angle -= Math.PI * 2;
+        while (angle < -Math.PI) angle += Math.PI * 2;
+        return angle;
+    }
+
     function updateCamera() {
-        // Use the bike's current rotation directly so the camera stays pinned to the rear
-        var angle = player.rotation;
-        var sine = Math.sin(angle);
-        var cosine = Math.cos(angle);
+        var targetYaw = player.rotation;
+        if (firstFrame) {
+            cameraYaw = targetYaw;
+        } else {
+            cameraYaw += wrapAngle(targetYaw - cameraYaw) * cameraYawSmoothing;
+        }
+        var sine = Math.sin(cameraYaw);
+        var cosine = Math.cos(cameraYaw);
 
         cameraIdeal.set(
             player.mesh.position.x - sine * cameraBackOffset.z + cameraBackOffset.x,
@@ -66,11 +78,11 @@ document.addEventListener('DOMContentLoaded', function() {
             camera.position.lerp(cameraIdeal, 0.35);
         }
 
-        // Look a bit ahead of the bike so the player sees the road
+        // Look ahead using smoothed yaw so the camera drifts and realigns gradually on turns
         lookAtPoint.set(
-            player.mesh.position.x + Math.sin(angle) * Math.abs(cameraLookOffset.z),
+            player.mesh.position.x + Math.sin(cameraYaw) * Math.abs(cameraLookOffset.z),
             player.mesh.position.y + cameraLookOffset.y,
-            player.mesh.position.z - Math.cos(angle) * Math.abs(cameraLookOffset.z)
+            player.mesh.position.z - Math.cos(cameraYaw) * Math.abs(cameraLookOffset.z)
         );
         camera.lookAt(lookAtPoint);
     }
