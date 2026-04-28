@@ -56,11 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateCamera() {
         var targetYaw = player.rotation;
-        if (firstFrame) {
-            cameraYaw = targetYaw;
-        } else {
-            cameraYaw += wrapAngle(targetYaw - cameraYaw) * cameraYawSmoothing;
-        }
+        cameraYaw = targetYaw;
         var sine = Math.sin(cameraYaw);
         var cosine = Math.cos(cameraYaw);
 
