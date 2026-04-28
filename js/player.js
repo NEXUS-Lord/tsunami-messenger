@@ -174,8 +174,8 @@ window.createPlayer = function(scene) {
         // Front wheel steering angle (visual + steering input)
         var targetSteer = 0;
         if (Math.abs(speed) > 0.01) {
-            if (keys['KeyA'] || keys['ArrowLeft']) targetSteer = 0.25;
-            if (keys['KeyD'] || keys['ArrowRight']) targetSteer = -0.25;
+            if (keys['KeyA'] || keys['ArrowLeft']) targetSteer = -0.25;
+            if (keys['KeyD'] || keys['ArrowRight']) targetSteer = 0.25;
         }
         frontWheelSteer += (targetSteer - frontWheelSteer) * 0.15;
 
@@ -209,9 +209,9 @@ window.createPlayer = function(scene) {
         // Lean when turning
         var lean = group.rotation.z;
         if (keys['KeyA'] || keys['ArrowLeft']) {
-            lean = Math.min(0.18, speed * 0.14);
-        } else if (keys['KeyD'] || keys['ArrowRight']) {
             lean = Math.max(-0.18, -speed * 0.14);
+        } else if (keys['KeyD'] || keys['ArrowRight']) {
+            lean = Math.min(0.18, speed * 0.14);
         } else {
             lean *= 0.82;
         }
