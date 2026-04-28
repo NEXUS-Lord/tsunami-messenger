@@ -56,17 +56,21 @@ window.createPlayer = function(scene) {
     fork.position.set(0, 0.1, -0.85);
     group.add(fork);
 
-    // Wheels — rotateX to make circular face visible from behind camera
-    var fWheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.2, 16);
-    fWheelGeo.rotateX(Math.PI / 2);
-    var frontWheel = new THREE.Mesh(fWheelGeo, new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.playerDetail }));
+    // Wheels — SphereGeometry looks correct from every angle, no rotation issues
+    var frontWheel = new THREE.Mesh(
+        new THREE.SphereGeometry(0.35, 12, 8),
+        new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.playerDetail })
+    );
     frontWheel.position.set(0, -0.35, -1.0);
+    frontWheel.scale.set(0.5, 1, 1); // Squash sideways to look like a tire
     group.add(frontWheel);
 
-    var bWheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.2, 16);
-    bWheelGeo.rotateX(Math.PI / 2);
-    var backWheel = new THREE.Mesh(bWheelGeo, new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.playerDetail }));
+    var backWheel = new THREE.Mesh(
+        new THREE.SphereGeometry(0.35, 12, 8),
+        new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.playerDetail })
+    );
     backWheel.position.set(0, -0.35, 0.85);
+    backWheel.scale.set(0.5, 1, 1); // Squash sideways
     group.add(backWheel);
 
     // Handlebar

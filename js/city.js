@@ -123,6 +123,9 @@ window.createCity = function(scene) {
             // Must not be on road
             if (isOnRoad(bx, bz)) continue;
 
+            // Skip spawn zone (player starts at 20,20)
+            if (Math.abs(bx - 20) < 15 && Math.abs(bz - 20) < 15) continue;
+
             placed = true;
             break;
         }

@@ -41,21 +41,25 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // ── CAMERA SYSTEM (cinematic third-person) ──
-    var cameraTarget = new THREE.Vector3();
     var cameraIdeal = new THREE.Vector3();
     var lookAtPoint = new THREE.Vector3();
+    var firstFrame = true;
 
     function updateCamera() {
         var angle = player.mesh.rotation.y;
-        // Offset: 9 units behind bike, 3.5 units above — LOW and BEHIND
         var behindX = player.mesh.position.x - Math.sin(angle) * 9;
         var behindY = player.mesh.position.y + 3.5;
         var behindZ = player.mesh.position.z + Math.cos(angle) * 9;
 
         cameraIdeal.set(behindX, behindY, behindZ);
-        camera.position.lerp(cameraIdeal, 0.1);
 
-        // Look slightly ahead of the bike, not at its center
+        if (firstFrame) {
+            camera.position.copy(cameraIdeal);
+            firstFrame = false;
+        } else {
+            camera.position.lerp(cameraIdeal, 0.1);
+        }
+
         lookAtPoint.set(
             player.mesh.position.x + Math.sin(angle) * 3,
             player.mesh.position.y + 0.8,
