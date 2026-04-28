@@ -26,11 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
     var deliveriesLeft = CONFIG.DELIVERY_COUNT;
     var timeRemaining = CONFIG.GAME_DURATION;
     var gameState = 'start';
+    var gameStartTime = 0;
 
     ui.showStartScreen();
 
     window.onGameStart = function() {
         gameState = 'playing';
+        gameStartTime = clock.getElapsedTime();
         ui.hideStartScreen();
         audio.playMusic();
         multi.connect('YOUR_RAILWAY_SERVER_URL');
@@ -74,9 +76,10 @@ document.addEventListener('DOMContentLoaded', function() {
         var elapsed = clock.getElapsedTime();
 
         if (gameState === 'playing') {
-            timeRemaining = Math.max(0, timeRemaining - delta);
+            var gameElapsed = elapsed - gameStartTime;
+            timeRemaining = Math.max(0, CONFIG.GAME_DURATION - gameElapsed);
             player.update(delta, window.playerKeys, water.getLevel());
-            water.update(elapsed);
+            water.update(gameElapsed);
 
             // UI update with compass params
             ui.update(

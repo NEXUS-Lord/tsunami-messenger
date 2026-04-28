@@ -80,20 +80,20 @@ window.createWater = function(scene) {
     scene.add(distantShimmer);
 
     // ── UPDATE ──
+    var waterRange = CONFIG.WATER_MAX_Y - CONFIG.WATER_START_Y;
+    var wallStartY = CONFIG.WATER_START_Y + 10;
+
     function update(elapsed) {
-        // 1. Rise all 3 flat layers
-        if (layer1.position.y < CONFIG.WATER_MAX_Y) {
-            layer1.position.y += CONFIG.WATER_RISE_RATE;
-        }
-        if (layer2.position.y < CONFIG.WATER_MAX_Y) {
-            layer2.position.y += CONFIG.WATER_RISE_RATE;
-        }
-        if (layer3.position.y < CONFIG.WATER_MAX_Y) {
-            layer3.position.y += CONFIG.WATER_RISE_RATE;
-        }
+        // 1. Time-based water rise — fills over GAME_DURATION seconds
+        var progress = Math.min(elapsed / CONFIG.GAME_DURATION, 1);
+        var targetY = CONFIG.WATER_START_Y + progress * waterRange;
+
+        layer1.position.y = targetY;
+        layer2.position.y = targetY;
+        layer3.position.y = targetY + 0.15;
 
         // 2. Rise wave wall (slower for dramatic effect)
-        wallMesh.position.y += CONFIG.WATER_RISE_RATE * 0.3;
+        wallMesh.position.y = wallStartY + progress * waterRange * 0.3;
 
         // 3. Animate layer 2 vertices (wave surface)
         var positions = layer2Geo.attributes.position;
