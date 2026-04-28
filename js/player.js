@@ -5,6 +5,7 @@ window.addEventListener('keyup', function(e) { window.playerKeys[e.code] = false
 window.createPlayer = function(scene) {
     var CONFIG = window.CONFIG;
     var speed = 0;
+    var heading = 0;
     var group = new THREE.Group();
 
     var orangeMat = new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.player });
@@ -171,12 +172,12 @@ window.createPlayer = function(scene) {
 
         if (Math.abs(speed) > 0.01) {
             var turnFactor = speed / CONFIG.PLAYER_SPEED;
-            if (keys['KeyA'] || keys['ArrowLeft']) group.rotation.y += CONFIG.PLAYER_TURN_SPEED * turnFactor;
-            if (keys['KeyD'] || keys['ArrowRight']) group.rotation.y -= CONFIG.PLAYER_TURN_SPEED * turnFactor;
+            if (keys['KeyA'] || keys['ArrowLeft']) heading += CONFIG.PLAYER_TURN_SPEED * turnFactor;
+            if (keys['KeyD'] || keys['ArrowRight']) heading -= CONFIG.PLAYER_TURN_SPEED * turnFactor;
         }
 
-        var sinY = Math.sin(group.rotation.y);
-        var cosY = Math.cos(group.rotation.y);
+        var sinY = Math.sin(heading);
+        var cosY = Math.cos(heading);
         var newX = group.position.x + sinY * speed;
         var newZ = group.position.z - cosY * speed;
         var limit = CONFIG.CITY_SIZE / 2;
@@ -193,13 +194,15 @@ window.createPlayer = function(scene) {
         }
 
         // Lean when turning
+        var lean = group.rotation.z;
         if (keys['KeyA'] || keys['ArrowLeft']) {
-            group.rotation.z = Math.min(0.18, speed * 0.14);
+            lean = Math.min(0.18, speed * 0.14);
         } else if (keys['KeyD'] || keys['ArrowRight']) {
-            group.rotation.z = Math.max(-0.18, -speed * 0.14);
+            lean = Math.max(-0.18, -speed * 0.14);
         } else {
-            group.rotation.z *= 0.82;
+            lean *= 0.82;
         }
+        group.rotation.set(0, heading, lean);
 
         frontWheel.rotation.x += speed * 3.5;
         backWheel.rotation.x += speed * 3.5;
@@ -223,7 +226,7 @@ window.createPlayer = function(scene) {
         mesh: group,
         update: update,
         get position() { return group.position; },
-        get rotation() { return group.rotation.y; },
+        get rotation() { return heading; },
         get drowned() { return drowned; },
         checkDelivery: checkDelivery
     };

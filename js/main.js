@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateCamera() {
         // Use the bike's current rotation directly so the camera stays pinned to the rear
-        var angle = player.mesh.rotation.y;
+        var angle = player.rotation;
         var sine = Math.sin(angle);
         var cosine = Math.cos(angle);
 
@@ -100,11 +100,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 deliveriesLeft,
                 water.getLevel(),
                 player.mesh.position,
-                player.mesh.rotation.y,
+                player.rotation,
                 city.deliveryPoints
             );
 
-            multi.update(player.mesh.position, player.mesh.rotation.y);
+            multi.update(player.mesh.position, player.rotation);
 
             // Sky color transition
             var progress = Math.max(0, Math.min(1, (water.getLevel() - CONFIG.WATER_START_Y) / (CONFIG.WATER_MAX_Y - CONFIG.WATER_START_Y)));
