@@ -157,6 +157,7 @@ window.createPlayer = function(scene) {
     }
 
     var drowned = false;
+    var frontWheelSteer = 0;
 
     function update(delta, keys, waterLevel) {
         if (keys['KeyW'] || keys['ArrowUp']) {
@@ -175,6 +176,15 @@ window.createPlayer = function(scene) {
             if (keys['KeyA'] || keys['ArrowLeft']) heading -= CONFIG.PLAYER_TURN_SPEED * turnFactor;
             if (keys['KeyD'] || keys['ArrowRight']) heading += CONFIG.PLAYER_TURN_SPEED * turnFactor;
         }
+
+        // Front wheel steering angle (visual feedback for which way bike turns)
+        var targetSteer = 0;
+        if (Math.abs(speed) > 0.01) {
+            var turnFactor = speed / CONFIG.PLAYER_SPEED;
+            if (keys['KeyA'] || keys['ArrowLeft']) targetSteer = 0.35;
+            if (keys['KeyD'] || keys['ArrowRight']) targetSteer = -0.35;
+        }
+        frontWheelSteer += (targetSteer - frontWheelSteer) * 0.15;
 
         var sinY = Math.sin(heading);
         var cosY = Math.cos(heading);
@@ -205,6 +215,7 @@ window.createPlayer = function(scene) {
         group.rotation.set(0, heading, lean);
 
         frontWheel.rotation.x += speed * 3.5;
+        frontWheel.rotation.y = frontWheelSteer;
         backWheel.rotation.x += speed * 3.5;
         rearHub.rotation.x += speed * 3.5;
 
