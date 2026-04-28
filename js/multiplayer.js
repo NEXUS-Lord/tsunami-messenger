@@ -1,111 +1,176 @@
 window.createMultiplayer = function(scene) {
-  let socket = null;
-  let connected = false;
-  let playerId = Math.random().toString(36).substr(2, 9);
-  let intervalId = null;
-  let currentPosition = { x: 0, y: 0, z: 0 };
-  let currentRotation = 0;
-  const ghosts = new Map();
+    var CONFIG = window.CONFIG;
+    var socket = null;
+    var connected = false;
+    var playerId = Math.random().toString(36).substr(2, 9);
+    var ghosts = {};
+    var ghostCount = 0;
+    var sendInterval = null;
+    var currentPos = { x: 0, y: 0, z: 0 };
+    var currentRot = 0;
 
-  function createGhostMesh() {
-    const group = new THREE.Group();
-    const bodyMat = new THREE.MeshLambertMaterial({ color: 0xFF6600, transparent: true, opacity: 0.5 });
-    const body = new THREE.Mesh(new THREE.BoxGeometry(2, 0.6, 1), bodyMat);
-    group.add(body);
-    const wheelMat = new THREE.MeshLambertMaterial({ color: 0x333333, transparent: true, opacity: 0.5 });
-    const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.2, 8);
-    const frontWheel = new THREE.Mesh(wheelGeo, wheelMat);
-    frontWheel.rotation.z = Math.PI / 2;
-    frontWheel.position.set(0, -0.3, 0.6);
-    group.add(frontWheel);
-    const backWheel = new THREE.Mesh(wheelGeo, wheelMat);
-    backWheel.rotation.z = Math.PI / 2;
-    backWheel.position.set(0, -0.3, -0.6);
-    group.add(backWheel);
-    return group;
-  }
+    function createGhostMesh() {
+        var group = new THREE.Group();
 
-  function updateGhosts(players) {
-    const activeIds = new Set();
-    for (const p of players) {
-      if (p.id === playerId) continue;
-      activeIds.add(p.id);
-      if (!ghosts.has(p.id)) {
-        if (ghosts.size >= 8) continue;
-        const group = createGhostMesh();
-        scene.add(group);
-        ghosts.set(p.id, {
-          group,
-          targetPos: new THREE.Vector3(p.x, p.y, p.z),
-          targetRot: p.rotation
-        });
-      } else {
-        const ghost = ghosts.get(p.id);
-        ghost.targetPos.set(p.x, p.y, p.z);
-        ghost.targetRot = p.rotation;
-      }
+        // Body
+        var bodyGeo = new THREE.BoxGeometry(2.2, 0.5, 0.9);
+        var bodyMat = new THREE.MeshLambertMaterial({ color: 0xFF6600, transparent: true, opacity: 0.45 });
+        var body = new THREE.Mesh(bodyGeo, bodyMat);
+        group.add(body);
+
+        // Front wheel
+        var fWheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.22, 12);
+        var fWheelMat = new THREE.MeshLambertMaterial({ color: 0x222222, transparent: true, opacity: 0.45 });
+        var fWheel = new THREE.Mesh(fWheelGeo, fWheelMat);
+        fWheel.rotation.z = Math.PI / 2;
+        fWheel.position.set(1.0, -0.35, 0);
+        group.add(fWheel);
+
+        // Back wheel
+        var bWheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.22, 12);
+        var bWheelMat = new THREE.MeshLambertMaterial({ color: 0x222222, transparent: true, opacity: 0.45 });
+        var bWheel = new THREE.Mesh(bWheelGeo, bWheelMat);
+        bWheel.rotation.z = Math.PI / 2;
+        bWheel.position.set(-0.9, -0.35, 0);
+        group.add(bWheel);
+
+        group.position.y = 0.52;
+        return group;
     }
-    for (const [id, ghost] of ghosts) {
-      if (!activeIds.has(id)) {
-        scene.remove(ghost.group);
-        ghosts.delete(id);
-      }
-    }
-  }
 
-  function connect(serverUrl) {
-    try {
-      socket = io(serverUrl, { transports: ['websocket'], reconnection: false });
-      socket.on('connect', function() {
-        connected = true;
-        intervalId = setInterval(function() {
-          if (connected) {
-            socket.emit('player:move', {
-              id: playerId,
-              x: currentPosition.x,
-              y: currentPosition.y,
-              z: currentPosition.z,
-              rotation: currentRotation
+    function updateGhosts(players) {
+        if (!players) return;
+
+        var activeIds = {};
+
+        for (var i = 0; i < players.length; i++) {
+            var p = players[i];
+            if (p.id === playerId) continue;
+
+            activeIds[p.id] = true;
+
+            if (ghosts[p.id]) {
+                // Update existing ghost target
+                ghosts[p.id].targetPos.set(p.x, p.y, p.z);
+                ghosts[p.id].targetRot = p.rotation;
+            } else if (ghostCount < 8) {
+                // Create new ghost
+                var mesh = createGhostMesh();
+                mesh.position.set(p.x, p.y, p.z);
+                scene.add(mesh);
+                ghosts[p.id] = {
+                    group: mesh,
+                    targetPos: new THREE.Vector3(p.x, p.y, p.z),
+                    targetRot: p.rotation || 0
+                };
+                ghostCount++;
+            }
+        }
+
+        // Remove missing ghosts
+        var ids = Object.keys(ghosts);
+        for (var j = 0; j < ids.length; j++) {
+            var id = ids[j];
+            if (!activeIds[id]) {
+                scene.remove(ghosts[id].group);
+                delete ghosts[id];
+                ghostCount--;
+            }
+        }
+    }
+
+    function connect(serverUrl) {
+        if (typeof io === 'undefined') {
+            connected = false;
+            return;
+        }
+
+        try {
+            socket = io(serverUrl, {
+                transports: ['websocket'],
+                reconnection: false,
+                timeout: 3000
             });
-          }
-        }, 100);
-      });
-      socket.on('players:update', function(players) {
-        updateGhosts(players);
-      });
-      socket.on('connect_error', function() {
+
+            socket.on('connect', function() {
+                connected = true;
+            });
+
+            socket.on('players:update', function(players) {
+                updateGhosts(players);
+            });
+
+            socket.on('connect_error', function() {
+                connected = false;
+            });
+
+            socket.on('disconnect', function() {
+                connected = false;
+            });
+
+            sendInterval = setInterval(function() {
+                if (connected && socket) {
+                    try {
+                        socket.emit('player:move', {
+                            id: playerId,
+                            x: currentPos.x,
+                            y: currentPos.y,
+                            z: currentPos.z,
+                            rotation: currentRot
+                        });
+                    } catch(e) {}
+                }
+            }, 100);
+        } catch(e) {
+            connected = false;
+        }
+    }
+
+    function update(position, rotationY) {
+        if (position) {
+            currentPos.x = position.x;
+            currentPos.y = position.y;
+            currentPos.z = position.z;
+        }
+        currentRot = rotationY || 0;
+
+        // Lerp ghosts toward targets
+        var ids = Object.keys(ghosts);
+        for (var i = 0; i < ids.length; i++) {
+            var g = ghosts[ids[i]];
+            g.group.position.lerp(g.targetPos, 0.15);
+
+            // Lerp rotation
+            var diff = g.targetRot - g.group.rotation.y;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            g.group.rotation.y += diff * 0.15;
+        }
+    }
+
+    function disconnect() {
+        if (sendInterval) {
+            clearInterval(sendInterval);
+            sendInterval = null;
+        }
+
+        // Remove all ghosts from scene
+        var ids = Object.keys(ghosts);
+        for (var i = 0; i < ids.length; i++) {
+            scene.remove(ghosts[ids[i]].group);
+        }
+        ghosts = {};
+        ghostCount = 0;
+
+        try {
+            if (socket) socket.disconnect();
+        } catch(e) {}
         connected = false;
-      });
-    } catch(e) {
-      connected = false;
     }
-  }
 
-  function update(position, rotationY) {
-    currentPosition.x = position.x;
-    currentPosition.y = position.y;
-    currentPosition.z = position.z;
-    currentRotation = rotationY;
-    for (const ghost of ghosts.values()) {
-      ghost.group.position.lerp(ghost.targetPos, 0.15);
-      ghost.group.rotation.y += (ghost.targetRot - ghost.group.rotation.y) * 0.15;
-    }
-  }
-
-  function disconnect() {
-    if (intervalId) {
-      clearInterval(intervalId);
-      intervalId = null;
-    }
-    for (const ghost of ghosts.values()) {
-      scene.remove(ghost.group);
-    }
-    ghosts.clear();
-    if (socket && connected) {
-      socket.disconnect();
-    }
-    connected = false;
-  }
-
-  return { connect, update, disconnect };
+    return {
+        connect: connect,
+        update: update,
+        disconnect: disconnect
+    };
 };

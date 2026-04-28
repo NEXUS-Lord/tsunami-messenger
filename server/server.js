@@ -1,34 +1,58 @@
-const app = require('express')();
-const http = require('http').createServer(app);
-const { Server } = require('socket.io');
-const io = new Server(http, { cors: { origin: '*', methods: ['GET','POST'] } });
-const PORT = process.env.PORT || 3001;
-const players = new Map();
+var express = require('express');
+var http = require('http');
+var { Server } = require('socket.io');
 
-io.on('connection', (socket) => {
-  console.log('Connected:', socket.id);
-  socket.on('player:move', (data) => {
-    players.set(data.id, { ...data, lastSeen: Date.now(), socketId: socket.id });
-    const otherPlayers = Array.from(players.values()).filter(p => p.id !== data.id);
-    socket.broadcast.emit('players:update', otherPlayers);
-  });
-  socket.on('disconnect', () => {
-    for (const [id, p] of players.entries()) {
-      if (p.socketId === socket.id) {
-        players.delete(id);
-        console.log('Disconnected:', id);
-        break;
-      }
-    }
-  });
+var app = express();
+var server = http.createServer(app);
+var io = new Server(server, { cors: { origin: '*' } });
+
+var PORT = process.env.PORT || 3001;
+var players = {};
+
+app.get('/', function(req, res) {
+    res.json({ status: 'ok', players: Object.keys(players).length });
 });
 
-setInterval(() => {
-  const now = Date.now();
-  for (const [id, p] of players.entries()) {
-    if (now - p.lastSeen > 10000) players.delete(id);
-  }
+io.on('connection', function(socket) {
+    var currentId = null;
+
+    socket.on('player:move', function(data) {
+        if (!data || !data.id) return;
+        currentId = data.id;
+        players[data.id] = {
+            id: data.id,
+            x: data.x || 0,
+            y: data.y || 0,
+            z: data.z || 0,
+            rotation: data.rotation || 0,
+            lastSeen: Date.now()
+        };
+        var playerList = [];
+        var ids = Object.keys(players);
+        for (var i = 0; i < ids.length; i++) {
+            playerList.push(players[ids[i]]);
+        }
+        socket.broadcast.emit('players:update', playerList);
+    });
+
+    socket.on('disconnect', function() {
+        if (currentId && players[currentId]) {
+            delete players[currentId];
+        }
+    });
+});
+
+// Clean stale players every 5 seconds
+setInterval(function() {
+    var now = Date.now();
+    var ids = Object.keys(players);
+    for (var i = 0; i < ids.length; i++) {
+        if (now - players[ids[i]].lastSeen > 10000) {
+            delete players[ids[i]];
+        }
+    }
 }, 5000);
 
-app.get('/', (req, res) => res.json({ status: 'ok', players: players.size }));
-http.listen(PORT, () => console.log('Server on port', PORT));
+server.listen(PORT, function() {
+    console.log('Tsunami Messenger server running on port ' + PORT);
+});
