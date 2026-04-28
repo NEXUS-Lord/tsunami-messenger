@@ -172,8 +172,8 @@ window.createPlayer = function(scene) {
 
         if (Math.abs(speed) > 0.01) {
             var turnFactor = speed / CONFIG.PLAYER_SPEED;
-            if (keys['KeyA'] || keys['ArrowLeft']) heading += CONFIG.PLAYER_TURN_SPEED * turnFactor;
-            if (keys['KeyD'] || keys['ArrowRight']) heading -= CONFIG.PLAYER_TURN_SPEED * turnFactor;
+            if (keys['KeyA'] || keys['ArrowLeft']) heading -= CONFIG.PLAYER_TURN_SPEED * turnFactor;
+            if (keys['KeyD'] || keys['ArrowRight']) heading += CONFIG.PLAYER_TURN_SPEED * turnFactor;
         }
 
         var sinY = Math.sin(heading);
