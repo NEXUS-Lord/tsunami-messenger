@@ -158,6 +158,7 @@ window.createPlayer = function(scene) {
 
     var drowned = false;
     var frontWheelSteer = 0;
+    var wheelbase = 2.0; // Distance between front and rear axles
 
     function update(delta, keys, waterLevel) {
         if (keys['KeyW'] || keys['ArrowUp']) {
@@ -171,20 +172,21 @@ window.createPlayer = function(scene) {
             if (Math.abs(speed) < 0.001) speed = 0;
         }
 
-        if (Math.abs(speed) > 0.01) {
-            var turnFactor = speed / CONFIG.PLAYER_SPEED;
-            if (keys['KeyA'] || keys['ArrowLeft']) heading -= CONFIG.PLAYER_TURN_SPEED * turnFactor;
-            if (keys['KeyD'] || keys['ArrowRight']) heading += CONFIG.PLAYER_TURN_SPEED * turnFactor;
-        }
-
-        // Front wheel steering angle (visual feedback for which way bike turns)
+        // Front wheel steering angle (Ackermann steering)
         var targetSteer = 0;
         if (Math.abs(speed) > 0.01) {
-            var turnFactor = speed / CONFIG.PLAYER_SPEED;
             if (keys['KeyA'] || keys['ArrowLeft']) targetSteer = 0.35;
+                        if (keys['KeyA'] || keys['ArrowLeft']) targetSteer = 0.4;
             if (keys['KeyD'] || keys['ArrowRight']) targetSteer = -0.35;
+                    if (keys['KeyD'] || keys['ArrowRight']) targetSteer = -0.4;
         }
         frontWheelSteer += (targetSteer - frontWheelSteer) * 0.15;
+
+        // Ackermann steering: heading changes based on turn radius, not instantly
+        if (Math.abs(speed) > 0.01 && Math.abs(frontWheelSteer) > 0.01) {
+            var turnRadius = wheelbase / Math.sin(frontWheelSteer);
+            heading += speed / turnRadius;
+        }
 
         var sinY = Math.sin(heading);
         var cosY = Math.cos(heading);
