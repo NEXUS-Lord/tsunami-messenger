@@ -13,8 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     scene.background = new THREE.Color(CONFIG.COLORS.sky);
 
     // ── CAMERA ──
-    var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 600);
-    // Start camera behind bike spawn position (20, 0.52, 20)
+    var camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 600);
     camera.position.set(20, 4, 29);
 
     // ── INIT MODULES ──
@@ -43,27 +42,40 @@ document.addEventListener('DOMContentLoaded', function() {
     // ── CAMERA SYSTEM (cinematic third-person) ──
     var cameraIdeal = new THREE.Vector3();
     var lookAtPoint = new THREE.Vector3();
+    var cameraBackOffset = new THREE.Vector3(0, 3.5, 9);
+    var cameraLookOffset = new THREE.Vector3(0, 0.9, -4);
+    var cameraYaw = 0;
     var firstFrame = true;
+
+    function wrapAngle(angle) {
+        while (angle > Math.PI) angle -= Math.PI * 2;
+        while (angle < -Math.PI) angle += Math.PI * 2;
+        return angle;
+    }
 
     function updateCamera() {
         var angle = player.mesh.rotation.y;
-        var behindX = player.mesh.position.x - Math.sin(angle) * 9;
-        var behindY = player.mesh.position.y + 3.5;
-        var behindZ = player.mesh.position.z + Math.cos(angle) * 9;
+        cameraYaw += wrapAngle(angle - cameraYaw) * 0.08;
+        var sine = Math.sin(cameraYaw);
+        var cosine = Math.cos(cameraYaw);
 
-        cameraIdeal.set(behindX, behindY, behindZ);
+        cameraIdeal.set(
+            player.mesh.position.x - sine * cameraBackOffset.z + cameraBackOffset.x,
+            player.mesh.position.y + cameraBackOffset.y,
+            player.mesh.position.z + cosine * cameraBackOffset.z
+        );
 
         if (firstFrame) {
             camera.position.copy(cameraIdeal);
             firstFrame = false;
         } else {
-            camera.position.lerp(cameraIdeal, 0.1);
+            camera.position.lerp(cameraIdeal, 0.08);
         }
 
         lookAtPoint.set(
-            player.mesh.position.x + Math.sin(angle) * 3,
-            player.mesh.position.y + 0.8,
-            player.mesh.position.z - Math.cos(angle) * 3
+            player.mesh.position.x + Math.sin(cameraYaw) * Math.abs(cameraLookOffset.z),
+            player.mesh.position.y + cameraLookOffset.y,
+            player.mesh.position.z - Math.cos(cameraYaw) * Math.abs(cameraLookOffset.z)
         );
         camera.lookAt(lookAtPoint);
     }

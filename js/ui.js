@@ -100,32 +100,6 @@ window.createUI = function() {
     waveWarning.style.cssText = 'position:absolute;top:80px;left:50%;transform:translateX(-50%);color:#FF2200;font-size:1.1rem;font-weight:bold;letter-spacing:0.2em;font-family:inherit;';
     overlay.appendChild(waveWarning);
 
-    // ── COMPASS ARROW (center-bottom, above wave bar) ──
-    var compassContainer = document.createElement('div');
-    compassContainer.id = 'compass-container';
-    compassContainer.className = 'hidden';
-    compassContainer.style.cssText = 'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;';
-
-    var compassLabel = document.createElement('div');
-    compassLabel.textContent = '📦 NEAREST';
-    compassLabel.style.cssText = 'color:rgba(255,215,0,0.7);font-size:0.65rem;letter-spacing:0.15em;font-family:inherit;';
-    compassContainer.appendChild(compassLabel);
-
-    var compassArrow = document.createElement('div');
-    compassArrow.id = 'compass-arrow';
-    compassArrow.style.cssText = 'width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;transition:transform 0.15s ease-out;filter:drop-shadow(0 0 6px rgba(255,215,0,0.6));';
-    compassArrow.textContent = '▲';
-    compassArrow.style.color = '#FFD700';
-    compassContainer.appendChild(compassArrow);
-
-    var compassDist = document.createElement('div');
-    compassDist.id = 'compass-dist';
-    compassDist.textContent = '0m';
-    compassDist.style.cssText = 'color:rgba(255,215,0,0.8);font-size:0.7rem;font-family:inherit;letter-spacing:0.05em;';
-    compassContainer.appendChild(compassDist);
-
-    overlay.appendChild(compassContainer);
-
     // ── GAME OVER SCREEN ──
     var gameoverScreen = document.createElement('div');
     gameoverScreen.id = 'gameover-screen';
@@ -144,10 +118,9 @@ window.createUI = function() {
         timerPanel.classList.remove('hidden');
         deliveryPanel.classList.remove('hidden');
         waveBarContainer.classList.remove('hidden');
-        compassContainer.classList.remove('hidden');
     }
 
-    function update(timeRemaining, deliveriesLeft, waterLevel, playerPos, playerRotY, deliveryPoints) {
+    function update(timeRemaining, deliveriesLeft, waterLevel) {
         // Timer
         var mins = Math.floor(timeRemaining / 60);
         var secs = Math.floor(timeRemaining % 60);
@@ -170,33 +143,6 @@ window.createUI = function() {
         } else {
             waveWarning.classList.add('hidden');
         }
-
-        // Compass arrow — point toward nearest delivery
-        if (playerPos && deliveryPoints && deliveryPoints.length > 0) {
-            var nearestDist = Infinity;
-            var nearestAngle = 0;
-            for (var i = 0; i < deliveryPoints.length; i++) {
-                var dp = deliveryPoints[i].mesh.position;
-                var dx = dp.x - playerPos.x;
-                var dz = dp.z - playerPos.z;
-                var dist = Math.sqrt(dx * dx + dz * dz);
-                if (dist < nearestDist) {
-                    nearestDist = dist;
-                    // atan2 gives world angle from player to delivery
-                    nearestAngle = Math.atan2(dx, -dz);
-                }
-            }
-            // Subtract player rotation to make it camera-relative
-            var relativeAngle = nearestAngle - (playerRotY || 0);
-            // Convert to degrees for CSS
-            var degrees = relativeAngle * (180 / Math.PI);
-            compassArrow.style.transform = 'rotate(' + degrees + 'deg)';
-            compassDist.textContent = Math.floor(nearestDist) + 'm';
-
-            compassContainer.classList.remove('hidden');
-        } else if (!deliveryPoints || deliveryPoints.length === 0) {
-            compassContainer.classList.add('hidden');
-        }
     }
 
     function showGameOver(won, deliveriesMade) {
@@ -205,7 +151,6 @@ window.createUI = function() {
         deliveryPanel.classList.add('hidden');
         waveBarContainer.classList.add('hidden');
         waveWarning.classList.add('hidden');
-        compassContainer.classList.add('hidden');
 
         // Build game over content
         gameoverScreen.innerHTML = '';

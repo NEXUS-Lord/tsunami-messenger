@@ -7,94 +7,125 @@ window.createPlayer = function(scene) {
     var speed = 0;
     var group = new THREE.Group();
 
-    // Body (narrow like a real motorcycle, long along Z)
-    var bodyGeo = new THREE.BoxGeometry(0.4, 0.45, 2.0);
-    var body = new THREE.Mesh(bodyGeo, new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.player }));
+    var orangeMat = new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.player });
+    var darkMat = new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.playerDetail });
+    var metalMat = new THREE.MeshLambertMaterial({ color: 0x6f6f6f });
+    var engineMat = new THREE.MeshLambertMaterial({ color: 0x444444 });
+
+    // Main body shell
+    var bodyGeo = new THREE.BoxGeometry(1.4, 0.45, 2.3);
+    var body = new THREE.Mesh(bodyGeo, orangeMat);
     group.add(body);
 
-    // Fuel tank (top-center, rounded look)
-    var tankGeo = new THREE.BoxGeometry(0.5, 0.3, 0.8);
-    var tank = new THREE.Mesh(tankGeo, new THREE.MeshLambertMaterial({ color: 0xCC3800 }));
-    tank.position.set(0, 0.3, -0.2);
-    group.add(tank);
+    // Front fairing
+    var fairingGeo = new THREE.BoxGeometry(1.0, 0.55, 0.8);
+    var fairing = new THREE.Mesh(fairingGeo, new THREE.MeshLambertMaterial({ color: 0xcc5a10 }));
+    fairing.position.set(0, 0.08, -0.78);
+    group.add(fairing);
 
-    // Rider torso
-    var torsoGeo = new THREE.BoxGeometry(0.45, 0.7, 0.4);
-    var torso = new THREE.Mesh(torsoGeo, new THREE.MeshLambertMaterial({ color: 0x222222 }));
-    torso.position.set(0, 0.75, 0.1);
-    group.add(torso);
+    // Seat and courier box area
+    var seatGeo = new THREE.BoxGeometry(0.95, 0.28, 0.95);
+    var seat = new THREE.Mesh(seatGeo, darkMat);
+    seat.position.set(0, 0.28, 0.18);
+    group.add(seat);
 
-    // Rider head (helmet)
-    var headGeo = new THREE.BoxGeometry(0.35, 0.35, 0.35);
-    var head = new THREE.Mesh(headGeo, new THREE.MeshLambertMaterial({ color: 0x333333 }));
-    head.position.set(0, 1.25, 0.0);
-    group.add(head);
+    var cargoGeo = new THREE.BoxGeometry(0.95, 0.85, 0.85);
+    var cargo = new THREE.Mesh(cargoGeo, new THREE.MeshLambertMaterial({ color: 0xd66a14 }));
+    cargo.position.set(0, 0.45, 0.95);
+    group.add(cargo);
 
-    // Helmet visor
-    var visorGeo = new THREE.BoxGeometry(0.36, 0.15, 0.1);
-    var visor = new THREE.Mesh(visorGeo, new THREE.MeshLambertMaterial({ color: 0x1A5276, emissive: 0x1A5276, emissiveIntensity: 0.5 }));
-    visor.position.set(0, 1.22, -0.18);
+    // Small rider silhouette so the bike still reads as a courier motorcycle
+    var riderTorsoGeo = new THREE.BoxGeometry(0.42, 0.62, 0.3);
+    var riderTorso = new THREE.Mesh(riderTorsoGeo, darkMat);
+    riderTorso.position.set(0, 0.8, -0.02);
+    group.add(riderTorso);
+
+    var helmetGeo = new THREE.BoxGeometry(0.32, 0.32, 0.32);
+    var helmet = new THREE.Mesh(helmetGeo, darkMat);
+    helmet.position.set(0, 1.15, -0.1);
+    group.add(helmet);
+
+    var visorGeo = new THREE.BoxGeometry(0.34, 0.12, 0.08);
+    var visor = new THREE.Mesh(visorGeo, new THREE.MeshLambertMaterial({ color: 0x1b1b1b, emissive: 0x091018, emissiveIntensity: 0.4 }));
+    visor.position.set(0, 1.09, -0.25);
     group.add(visor);
 
     // Engine block
-    var engineGeo = new THREE.BoxGeometry(0.5, 0.35, 0.6);
-    var engine = new THREE.Mesh(engineGeo, new THREE.MeshLambertMaterial({ color: 0x555555 }));
-    engine.position.set(0, -0.15, 0);
+    var engineGeo = new THREE.BoxGeometry(0.52, 0.38, 0.6);
+    var engine = new THREE.Mesh(engineGeo, engineMat);
+    engine.position.set(0, -0.16, 0.15);
     group.add(engine);
 
     // Exhaust pipe
-    var exhaustGeo = new THREE.CylinderGeometry(0.05, 0.07, 1.0, 6);
+    var exhaustGeo = new THREE.CylinderGeometry(0.05, 0.07, 1.15, 6);
     exhaustGeo.rotateX(Math.PI / 2);
-    var exhaust = new THREE.Mesh(exhaustGeo, new THREE.MeshLambertMaterial({ color: 0x888888 }));
-    exhaust.position.set(0.3, -0.2, 0.4);
+    var exhaust = new THREE.Mesh(exhaustGeo, metalMat);
+    exhaust.position.set(0.46, -0.18, 0.42);
     group.add(exhaust);
 
+    var exhaustTipGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.16, 6);
+    exhaustTipGeo.rotateX(Math.PI / 2);
+    var exhaustTip = new THREE.Mesh(exhaustTipGeo, darkMat);
+    exhaustTip.position.set(0.58, -0.18, 0.95);
+    group.add(exhaustTip);
+
     // Front fork
-    var forkGeo = new THREE.BoxGeometry(0.08, 0.9, 0.08);
-    var fork = new THREE.Mesh(forkGeo, new THREE.MeshLambertMaterial({ color: 0x666666 }));
-    fork.rotation.x = 0.25;
-    fork.position.set(0, 0.1, -0.85);
+    var forkGeo = new THREE.BoxGeometry(0.1, 0.95, 0.1);
+    var fork = new THREE.Mesh(forkGeo, metalMat);
+    fork.rotation.x = 0.18;
+    fork.position.set(0, 0.08, -1.0);
     group.add(fork);
 
-    // Wheels — SphereGeometry looks correct from every angle, no rotation issues
-    var frontWheel = new THREE.Mesh(
-        new THREE.SphereGeometry(0.35, 12, 8),
-        new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.playerDetail })
-    );
-    frontWheel.position.set(0, -0.35, -1.0);
-    frontWheel.scale.set(0.5, 1, 1); // Squash sideways to look like a tire
+    // Wheels — proper cylindrical tires read better from the chase camera
+    var tireGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.22, 14);
+    tireGeo.rotateZ(Math.PI / 2);
+    var frontWheel = new THREE.Mesh(tireGeo, darkMat);
+    frontWheel.position.set(0, -0.36, -1.08);
     group.add(frontWheel);
 
-    var backWheel = new THREE.Mesh(
-        new THREE.SphereGeometry(0.35, 12, 8),
-        new THREE.MeshLambertMaterial({ color: CONFIG.COLORS.playerDetail })
-    );
-    backWheel.position.set(0, -0.35, 0.85);
-    backWheel.scale.set(0.5, 1, 1); // Squash sideways
+    var backWheel = new THREE.Mesh(tireGeo, darkMat);
+    backWheel.position.set(0, -0.36, 1.0);
     group.add(backWheel);
 
+    var rearHubGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.24, 10);
+    rearHubGeo.rotateZ(Math.PI / 2);
+    var rearHub = new THREE.Mesh(rearHubGeo, metalMat);
+    rearHub.position.set(0, -0.36, 1.0);
+    group.add(rearHub);
+
     // Handlebar
-    var handleGeo = new THREE.BoxGeometry(0.9, 0.06, 0.06);
-    var handlebar = new THREE.Mesh(handleGeo, new THREE.MeshLambertMaterial({ color: 0x999999 }));
-    handlebar.position.set(0, 0.45, -0.9);
+    var handleGeo = new THREE.BoxGeometry(1.1, 0.07, 0.07);
+    var handlebar = new THREE.Mesh(handleGeo, metalMat);
+    handlebar.position.set(0, 0.5, -0.92);
     group.add(handlebar);
 
+    var handleStemGeo = new THREE.BoxGeometry(0.08, 0.32, 0.08);
+    var handleStem = new THREE.Mesh(handleStemGeo, metalMat);
+    handleStem.rotation.x = 0.25;
+    handleStem.position.set(0, 0.3, -0.92);
+    group.add(handleStem);
+
     // Headlight
-    var hlGeo = new THREE.BoxGeometry(0.18, 0.18, 0.08);
+    var hlGeo = new THREE.BoxGeometry(0.24, 0.2, 0.12);
     var hlMat = new THREE.MeshLambertMaterial({ color: 0xFFFFAA, emissive: 0xFFFFAA, emissiveIntensity: 2.0 });
     var headlight = new THREE.Mesh(hlGeo, hlMat);
-    headlight.position.set(0, 0.15, -1.1);
+    headlight.position.set(0, 0.12, -1.12);
     group.add(headlight);
     var hlLight = new THREE.PointLight(0xFFFFAA, 1.5, 18);
-    hlLight.position.set(0, 0.15, -1.3);
+    hlLight.position.set(0, 0.15, -1.35);
     group.add(hlLight);
 
     // Tail light
-    var tlGeo = new THREE.BoxGeometry(0.25, 0.12, 0.06);
+    var tlGeo = new THREE.BoxGeometry(0.3, 0.14, 0.08);
     var tlMat = new THREE.MeshLambertMaterial({ color: 0xFF0000, emissive: 0xFF0000, emissiveIntensity: 2.0 });
     var taillight = new THREE.Mesh(tlGeo, tlMat);
-    taillight.position.set(0, 0.15, 1.1);
+    taillight.position.set(0, 0.14, 1.18);
     group.add(taillight);
+
+    var rearReflectorGeo = new THREE.BoxGeometry(0.18, 0.06, 0.03);
+    var rearReflector = new THREE.Mesh(rearReflectorGeo, new THREE.MeshLambertMaterial({ color: 0x4a0000, emissive: 0x220000, emissiveIntensity: 0.6 }));
+    rearReflector.position.set(0, 0.06, 1.26);
+    group.add(rearReflector);
 
     // Spawn at road intersection
     group.position.set(20, 0.52, 20);
@@ -163,12 +194,16 @@ window.createPlayer = function(scene) {
 
         // Lean when turning
         if (keys['KeyA'] || keys['ArrowLeft']) {
-            group.rotation.z = speed * 0.12;
+            group.rotation.z = Math.min(0.18, speed * 0.14);
         } else if (keys['KeyD'] || keys['ArrowRight']) {
-            group.rotation.z = -speed * 0.12;
+            group.rotation.z = Math.max(-0.18, -speed * 0.14);
         } else {
-            group.rotation.z *= 0.85;
+            group.rotation.z *= 0.82;
         }
+
+        frontWheel.rotation.x += speed * 3.5;
+        backWheel.rotation.x += speed * 3.5;
+        rearHub.rotation.x += speed * 3.5;
 
         if (group.position.y <= waterLevel + 0.3) drowned = true;
     }
