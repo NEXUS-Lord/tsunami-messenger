@@ -17,7 +17,7 @@ The city floods in real time — rising water blocks roads, forcing you to rerou
 
 ## Current State
 
-This project is **playable but incomplete**. It was built as an entry for [VibeJam 2026](https://jam.pieter.com/) but didn't make the May 1st deadline.
+This project is **playable but incomplete**. It was built as an entry for VibeJam 2026 — discovered on April 26th, with 5 days left on the clock.
 
 What works:
 - Motorcycle movement and controls
