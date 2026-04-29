@@ -25,7 +25,6 @@ What works:
 - Countdown timer (top left)
 - Delivery objective tracker ("X left", top right)
 - Wave progress bar (bottom)
-- Delivery markers visible in the world (yellow indicators)
 - Ghost courier multiplayer layer (via server/)
 
 What's unfinished:
